@@ -142,18 +142,25 @@ fi
 
 # --- step 6: build workspace (optional) ---
 if $DO_BUILD; then
-  if command -v colcon >/dev/null 2>&1; then
-    log "Building workspace (release profile if available)..."
-    if colcon build --mixin release; then
-      log "Build succeeded with release mixin."
+  if [[ -x "scripts/build.sh" ]]; then
+    log "Building workspace via scripts/build.sh (keeps artifacts under ros2_ws/)..."
+    run "bash scripts/build.sh --ros-distro ${ROS_DISTRO} --mixin release --auto-clean"
+  elif command -v colcon >/dev/null 2>&1; then
+    log "scripts/build.sh not found; falling back to colcon build in ros2_ws/..."
+    if [[ -d ros2_ws ]]; then
+      if (cd ros2_ws && colcon build --mixin release); then
+        log "Build succeeded with release mixin."
+      else
+        warn "Release mixin not available or build failed. Falling back to CMAKE_BUILD_TYPE=Release."
+        run "cd ros2_ws && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release"
+      fi
     else
-      warn "Release mixin not available or build failed. Falling back to CMAKE_BUILD_TYPE=Release."
-      run "colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release"
+      warn "ros2_ws directory not found; skipping build."
     fi
-    log "To use this overlay in current shell: source ros2_ws/install/setup.bash"
   else
     warn "colcon not found. Skipping build."
   fi
+  log "To use this overlay in current shell: source ros2_ws/install/setup.bash"
 fi
 
 # --- step 7: write init stamp ---
