@@ -1,0 +1,10 @@
+{
+  "initialized": true,
+  "ros_distro": "jazzy",
+  "created_utc": "2025-09-27T03:20:22Z",
+  "steps_run": {
+    "mixins": true,
+    "direnv_allow": true,
+    "build": false
+  }
+}
